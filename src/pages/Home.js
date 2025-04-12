@@ -6,12 +6,12 @@ import ManageIcon from '@mui/icons-material/Settings';
 import ReportIcon from '@mui/icons-material/Assessment';
 import { AnimatePresence, motion } from 'framer-motion';
 import './Home.css';
+import TabBook from './TabBook';
+import TabManage from './TabManage';
 
-const TabBook = () => <p>Book appointment.</p>;
-const TabManage = () => <p>Manage appointments.</p>;
 const TabReport = () => <p>Reports on appointments.</p>;
 
-const tabs = [<TabBook />, <TabManage />, <TabReport />];
+const tabs = [<TabManage />, <TabBook />, <TabReport />];
 
 function Home() {
   const { user, signOut } = useAuth();
@@ -26,13 +26,13 @@ function Home() {
   return (
     <div className="home-container">
       <header className="app-header">
-        <h1>Welcome to the App</h1>
+        <h1>Physio One Cbe</h1>
         <div className="user-profile">
           {user?.photoURL && (
-            <img 
-              src={user.photoURL} 
-              alt={user.displayName || 'User'} 
-              className="user-avatar" 
+            <img
+              src={user.photoURL}
+              alt={user.displayName || 'User'}
+              className="user-avatar"
             />
           )}
           <span className="user-name">{user?.displayName}</span>
@@ -44,7 +44,7 @@ function Home() {
 
       <main className="app-content">
         <div className="welcome-message">
-          <h2>Hello, {user?.displayName}!</h2>          
+          <h2>Hello, {user?.displayName}!</h2>
         </div>
 
         {/* Updated Section Starts Here */}
@@ -66,8 +66,8 @@ function Home() {
 
       <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
         <BottomNavigation value={tabIndex} onChange={handleTabChange}>
-          <BottomNavigationAction label="Book" icon={<BookIcon />} />
           <BottomNavigationAction label="Manage" icon={<ManageIcon />} />
+          <BottomNavigationAction label="Book" icon={<BookIcon />} />
           <BottomNavigationAction label="Report" icon={<ReportIcon />} />
         </BottomNavigation>
       </Paper>
