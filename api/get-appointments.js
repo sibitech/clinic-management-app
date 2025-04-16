@@ -1,4 +1,4 @@
-const { getAppointmentsByDate } = require('./db');
+const { fetchAppointmentsByDateAndByLocation } = require('./db');
 
 module.exports = async (req, res) => {
   // Set CORS headers
@@ -15,12 +15,13 @@ module.exports = async (req, res) => {
 
   try {
     const { date } = req.query;
+    const { location } = req.query;
 
     if (!date) {
       return res.status(400).json({ success: false, error: 'Date parameter is required' });
     }
 
-    const appointments = await getAppointmentsByDate(date);
+    const appointments = await fetchAppointmentsByDateAndByLocation(date,location);
 
     return res.status(200).json({ success: true, data: appointments });
   } catch (error) {

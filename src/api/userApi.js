@@ -36,15 +36,36 @@ const formatDateForAPI = (date) => {
 };
 
 /**
+ * Fetch clinic locations
+ * 
+ * @returns {Array} Array of clinic locations
+ */
+export const fetchClinicLocations = async () => {
+  try {   
+    const response = await axios.get(`${API_BASE_URL}/get-clinic-locations`);
+    
+    if (response.data.success) {
+      return response.data.data || [];
+    } else {
+      console.error('API returned error:', response.data.error);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching clinic locations:', error);
+    throw error;
+  }
+};
+
+/**
  * Fetch appointments for a specific date
  * @param {Date} date - Date object
  * @returns {Array} Array of appointments
  */
-export const fetchAppointmentsByDate = async (date) => {
+export const fetchAppointmentsByDateAndByLocation = async (date, location) => {
   try {
     const formattedDate = formatDateForAPI(date);
     const response = await axios.get(`${API_BASE_URL}/get-appointments`, {
-      params: { date: formattedDate }
+      params: { date: formattedDate,  location: location}
     });
     
     if (response.data.success) {
