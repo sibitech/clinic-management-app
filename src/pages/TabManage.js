@@ -220,7 +220,7 @@ const TabManage = () => {
               value={selectedClinicLocation || "none"}
               onChange={handleLocationChange}
             >
-              <MenuItem value="none">None</MenuItem>
+              <MenuItem value="none">All Locations</MenuItem>
               {clinicLocations.map((clinicLocation) => (
                 <MenuItem key={clinicLocation.id} value={clinicLocation.id}>
                   {clinicLocation.name}
