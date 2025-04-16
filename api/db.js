@@ -31,6 +31,22 @@ async function isUserAllowed(email) {
   }
 }
 
+async function getClinicLocations() {
+  try {
+    const client = await getPool().connect();
+    try {
+      const query = 'SELECT id, name FROM clinic_locations';
+      const result = await client.query(query);
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Database error:', error);
+    throw new Error('Database error');
+  }
+}
+
 async function persistAppointment(payload) {
   try {
     const client = await getPool().connect();
@@ -74,38 +90,60 @@ async function persistAppointment(payload) {
   }
 }
 // Function to get appointments by date
-async function getAppointmentsByDate(date) {
+async function fetchAppointmentsByDateAndByLocation(date, location) {
   try {
     const client = await getPool().connect();
     try {
-
+      // Format date properly - ensure it's a string in YYYY-MM-DD format
+      const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
+      
       // Create date range for full day in UTC
-      const startDate = new Date(date + 'T00:00:00Z');
-      const endDate = new Date(date + 'T23:59:59.999Z');
-
-      const query = `
-        SELECT 
-          id,
-          appointmaent_date_time as appointment_time,
-          status,
-          patient_name,
-          physiotherapist,
-          updated_at,
-          updated_by,
-          patient_phone_number as phone,
-          diagnosis,
-          notes,
-          amount
-        FROM 
-          appointment
-        WHERE 
-          appointmaent_date_time BETWEEN $1 AND $2
-        ORDER BY 
-          appointmaent_date_time ASC
+      const startDate = new Date(`${dateStr}T00:00:00Z`);
+      const endDate = new Date(`${dateStr}T23:59:59.999Z`);
+      
+      // Define common columns to avoid duplication
+      const commonColumns = `
+        appointment.id,
+        appointmaent_date_time as appointment_time,
+        status,
+        patient_name,
+        updated_at,
+        updated_by,
+        patient_phone_number as phone,
+        diagnosis,
+        notes,
+        amount
       `;
-
-      const result = await client.query(query, [startDate.toISOString(), endDate.toISOString()]);
-
+      
+      let query;
+      let params;
+      
+      if (!location) {
+        // If no location specified, fetch all appointments for the date
+        query = `
+          SELECT ${commonColumns}
+          FROM appointment         
+          WHERE appointmaent_date_time BETWEEN $1 AND $2
+          ORDER BY appointmaent_date_time ASC
+        `;
+        params = [startDate.toISOString(), endDate.toISOString()];
+      } else {
+        // If location is specified, join with clinic_locations and filter by location name
+        query = `
+          SELECT 
+            ${commonColumns},
+            clinic_locations.name
+          FROM appointment
+          JOIN clinic_locations ON clinic_locations.id = appointment.clinic_location                 
+          WHERE 
+            appointmaent_date_time BETWEEN $1 AND $2 AND
+            clinic_locations.id = $3
+          ORDER BY appointmaent_date_time ASC
+        `;
+        params = [startDate.toISOString(), endDate.toISOString(), location];
+      }
+      
+      const result = await client.query(query, params);
       return result.rows;
     } finally {
       client.release();
@@ -247,7 +285,8 @@ module.exports = {
   addAllowedUser,
   getAllowedUsers,
   persistAppointment,
-  getAppointmentsByDate,
+  fetchAppointmentsByDateAndByLocation,
   updateAppointment,
-  deleteAppointment
+  deleteAppointment,
+  getClinicLocations
 };
