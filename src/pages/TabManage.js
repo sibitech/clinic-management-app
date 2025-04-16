@@ -5,52 +5,15 @@ import {
   TableHead, TableRow, Dialog, DialogActions,
   DialogContent, DialogTitle, TextField, Button,
   FormControl, InputLabel, Select, MenuItem,
-  Grid, Snackbar, Alert, styled
+  Grid, Snackbar, Alert
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { SwipeableList, SwipeableListItem, SwipeAction, TrailingActions } from 'react-swipeable-list';
-import 'react-swipeable-list/dist/styles.css';
 import { fetchAppointmentsByDateAndByLocation, fetchClinicLocations, updateAppointment, deleteAppointment } from '../api/userApi';
 import { useAuth } from '../context/AuthContext';
-
-// Styled components for enhanced visual appearance
-const StyledTableRow = styled(TableRow)(({ theme, index }) => ({
-  cursor: 'pointer',
-  '&:nth-of-type(odd)': {
-    backgroundColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.04)',
-  },
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)',
-  },
-  transition: 'background-color 0.2s ease',
-}));
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  padding: theme.spacing(1.5),
-}));
-
-const HeaderTableCell = styled(TableCell)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText,
-  fontWeight: 'bold',
-}));
-
-const ActionButton = styled(Button)(({ theme, color }) => ({
-  backgroundColor: color === 'delete' ? theme.palette.error.main : theme.palette.primary.main,
-  color: theme.palette.common.white,
-  height: '100%',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  padding: theme.spacing(0, 3),
-  '&:hover': {
-    backgroundColor: color === 'delete' ? theme.palette.error.dark : theme.palette.primary.dark,
-  },
-}));
 
 const TabManage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -77,7 +40,7 @@ const TabManage = () => {
         });
       }
     };
-
+    
     loadLocations();
   }, []); // Empty dependency array means this runs once on mount
 
@@ -118,8 +81,8 @@ const TabManage = () => {
     }
   };
 
-  // Handle row/appointment click - opens edit dialog
-  const handleRowClick = (appointment) => {
+  // Open edit dialog
+  const handleEditClick = (appointment) => {
     setCurrentAppointment({ ...appointment });
     setOpenDialog(true);
   };
@@ -189,51 +152,34 @@ const TabManage = () => {
 
   // Delete appointment
   const handleDeleteClick = async (id) => {
-    try {
-      const result = await deleteAppointment(id);
+    if (window.confirm('Are you sure you want to delete this appointment?')) {
+      try {
+        const result = await deleteAppointment(id);
 
-      if (result.success) {
-        setAppointments(appointments.filter(app => app.id !== id));
+        if (result.success) {
+          setAppointments(appointments.filter(app => app.id !== id));
 
+          setNotification({
+            open: true,
+            message: 'Appointment deleted successfully',
+            severity: 'success'
+          });
+        } else {
+          setNotification({
+            open: true,
+            message: result.error || 'Failed to delete appointment',
+            severity: 'error'
+          });
+        }
+      } catch (error) {
         setNotification({
           open: true,
-          message: 'Appointment deleted successfully',
-          severity: 'success'
-        });
-      } else {
-        setNotification({
-          open: true,
-          message: result.error || 'Failed to delete appointment',
+          message: 'Failed to delete appointment',
           severity: 'error'
         });
       }
-    } catch (error) {
-      setNotification({
-        open: true,
-        message: 'Failed to delete appointment',
-        severity: 'error'
-      });
     }
   };
-
-  // Delete action for swipeable list
-  const getTrailingActions = (appointmentId) => (
-    <TrailingActions>
-      <SwipeAction
-        destructive={true}
-        onClick={() => {
-          if (window.confirm('Are you sure you want to delete this appointment?')) {
-            handleDeleteClick(appointmentId);
-          }
-        }}
-      >
-        <ActionButton color="delete">
-          <DeleteIcon />
-          Delete
-        </ActionButton>
-      </SwipeAction>
-    </TrailingActions>
-  );
 
   // Close notification
   const handleCloseNotification = () => {
@@ -252,24 +198,14 @@ const TabManage = () => {
     });
   };
 
-  // Determine if we should show swipeable list (mobile) or regular table (desktop)
-  const isMobile = window.innerWidth < 768;
-
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box sx={{ width: '100%', p: 2 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+        <Typography variant="h5" gutterBottom>
           Manage Appointments
         </Typography>
 
-        <Box sx={{
-          mb: 3,
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          gap: 2,
-          justifyContent: 'space-between',
-          alignItems: isMobile ? 'stretch' : 'center'
-        }}>
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <DatePicker
             label="Appointment Date"
             value={selectedDate}
@@ -284,7 +220,7 @@ const TabManage = () => {
               value={selectedClinicLocation || "none"}
               onChange={handleLocationChange}
             >
-              <MenuItem value="none">All Locations</MenuItem>
+              <MenuItem value="none">None</MenuItem>
               {clinicLocations.map((clinicLocation) => (
                 <MenuItem key={clinicLocation.id} value={clinicLocation.id}>
                   {clinicLocation.name}
@@ -297,102 +233,33 @@ const TabManage = () => {
         {loading ? (
           <Typography>Loading appointments...</Typography>
         ) : appointments.length === 0 ? (
-          <Typography sx={{ textAlign: 'center', py: 4, color: 'text.secondary' }}>
-            No appointments for this date.
-          </Typography>
-        ) : isMobile ? (
-          // Mobile view with swipeable list
-          <SwipeableList threshold={0.5}>
-            {appointments.map((appointment, index) => (
-              <SwipeableListItem
-                key={appointment.id}
-                trailingActions={getTrailingActions(appointment.id)}
-              >
-                <Paper
-                  elevation={1}
-                  sx={{
-                    mb: 1,
-                    p: 2,
-                    borderLeft: `4px solid ${appointment.status === 'completed' ? 'success.main' :
-                        appointment.status === 'cancelled' ? 'error.main' : 'primary.main'
-                      }`,
-                    backgroundColor: index % 2 === 0 ? 'background.paper' : 'action.hover'
-                  }}
-                  onClick={() => handleRowClick(appointment)}
-                >
-                  <Box sx={{ mb: 1 }}>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                      {appointment.patient_name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {formatTime(appointment.appointment_time)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2">
-                      Status: <b>{appointment.status}</b>
-                    </Typography>                    
-                  </Box>
-                </Paper>
-              </SwipeableListItem>
-            ))}
-          </SwipeableList>
+          <Typography>No appointments for this date.</Typography>
         ) : (
-          // Desktop view with table
-          <TableContainer component={Paper} sx={{ boxShadow: 2, borderRadius: 2, overflow: 'hidden' }}>
+          <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
-                  <HeaderTableCell>Patient Name</HeaderTableCell>
-                  <HeaderTableCell>Time</HeaderTableCell>
-                  <HeaderTableCell>Status</HeaderTableCell>
-                  <HeaderTableCell>Actions</HeaderTableCell>
+                  <TableCell>Patient Name</TableCell>
+                  <TableCell>Time</TableCell>
+                  <TableCell>Status</TableCell>                  
+                  <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {appointments.map((appointment, index) => (
-                  <StyledTableRow
-                    key={appointment.id}
-                    index={index}
-                    onClick={() => handleRowClick(appointment)}
-                  >
-                    <StyledTableCell>{appointment.patient_name}</StyledTableCell>
-                    <StyledTableCell>{formatTime(appointment.appointment_time)}</StyledTableCell>
-                    <StyledTableCell>
-                      <Box
-                        component="span"
-                        sx={{
-                          py: 0.5,
-                          px: 1,
-                          borderRadius: 1,
-                          backgroundColor:
-                            appointment.status === 'completed' ? 'success.light' :
-                              appointment.status === 'cancelled' ? 'error.light' : 'primary.light',
-                          color:
-                            appointment.status === 'completed' ? 'success.dark' :
-                              appointment.status === 'cancelled' ? 'error.dark' : 'primary.dark',
-                        }}
-                      >
-                        {appointment.status}
-                      </Box>
-                    </StyledTableCell>                    
-                    <StyledTableCell>
-                      <IconButton onClick={(e) => {
-                        e.stopPropagation(); // Prevent row click
-                        handleRowClick(appointment);
-                      }} size="small">
+                {appointments.map((appointment) => (
+                  <TableRow key={appointment.id}>
+                    <TableCell>{appointment.patient_name}</TableCell>
+                    <TableCell>{formatTime(appointment.appointment_time)}</TableCell>
+                    <TableCell>{appointment.status}</TableCell>                    
+                    <TableCell>
+                      <IconButton onClick={() => handleEditClick(appointment)} size="small">
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton onClick={(e) => {
-                        e.stopPropagation(); // Prevent row click
-                        if (window.confirm('Are you sure you want to delete this appointment?')) {
-                          handleDeleteClick(appointment.id);
-                        }
-                      }} size="small">
+                      <IconButton onClick={() => handleDeleteClick(appointment.id)} size="small">
                         <DeleteIcon fontSize="small" />
                       </IconButton>
-                    </StyledTableCell>
-                  </StyledTableRow>
+                    </TableCell>
+                  </TableRow>
                 ))}
               </TableBody>
             </Table>
@@ -401,12 +268,10 @@ const TabManage = () => {
 
         {/* Edit Appointment Dialog */}
         <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-          <DialogTitle sx={{ backgroundColor: 'primary.main', color: 'white' }}>
-            Edit Appointment
-          </DialogTitle>
-          <DialogContent sx={{ mt: 2 }}>
+          <DialogTitle>Edit Appointment</DialogTitle>
+          <DialogContent>
             {currentAppointment && (
-              <Grid container spacing={2}>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
@@ -475,14 +340,9 @@ const TabManage = () => {
               </Grid>
             )}
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleCloseDialog} variant="outlined">Cancel</Button>
-            <Button
-              onClick={handleSaveChanges}
-              variant="contained"
-              color="primary"
-              sx={{ minWidth: 100 }}
-            >
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>Cancel</Button>
+            <Button onClick={handleSaveChanges} variant="contained" color="primary">
               Save Changes
             </Button>
           </DialogActions>
@@ -495,12 +355,7 @@ const TabManage = () => {
           onClose={handleCloseNotification}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
-          <Alert
-            onClose={handleCloseNotification}
-            severity={notification.severity}
-            variant="filled"
-            elevation={6}
-          >
+          <Alert onClose={handleCloseNotification} severity={notification.severity}>
             {notification.message}
           </Alert>
         </Snackbar>
