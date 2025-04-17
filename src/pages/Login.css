@@ -1,14 +1,18 @@
 .login-container {
-  height: 100vh;
+  height: 100vh; /* Full viewport height */
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center; /* Vertical centering */
+  justify-content: center; /* Horizontal centering */
   background-color: #f5f7fa;
+  background-image: url('/public/physiotherapy-loginpage.jpg');
+  background-size: cover; /* Crucial for scaling */
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat;
 }
 
 .login-card {
-  background-color: white;
-  border-radius: 8px;
+  background-color: violet;
+  border-radius: 100px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 48px;
   width: 100%;
@@ -16,25 +20,20 @@
   text-align: center;
 }
 
-.login-card h1 {
-  margin-top: 0;
-  color: #333;
-}
-
-.login-card p {
-  color: #666;
-  margin-bottom: 32px;
+.login-form {
+  position: relative;
+  z-index: 1;
 }
 
 .google-sign-in-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: white;
-  color: #444;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
+  background-color: indigo;
+  color: #000;
+  border: 2px solid #ddd;
+  border-radius: 100px;
+  font-size: 20px;
   font-weight: 500;
   padding: 12px 16px;
   width: 100%;

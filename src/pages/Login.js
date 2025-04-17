@@ -26,23 +26,26 @@ function Login() {
   };
 
   return (
+
     <div className="login-container">
-      <div className="login-card">
-        <h1>Welcome</h1>
-        <p>Sign in to access the application</p>
-        <button 
-          className="google-sign-in-button" 
-          onClick={handleSignIn}
-        >
-          <img 
-            src="/google-logo.svg" 
-            alt="Google" 
-            className="google-icon" 
-          />
-          Sign in with Google
-        </button>
-      </div>
-    </div>
+          <div className="login-card">
+            <h1>Hello Doc</h1>
+            <p>Sign in to access the application</p>
+            <button
+              className="google-sign-in-button"
+              onClick={handleSignIn}
+            >
+              <img
+                src="/google-logo.svg"
+                alt="Google"
+                className="google-icon"
+              />
+              Sign in with Google
+            </button>
+          </div>
+        </div>
+
+
   );
 }
 
