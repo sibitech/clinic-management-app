@@ -55,9 +55,10 @@ async function persistAppointment(payload) {
       const {
         datetime,
         name,
-        physio,
+        clinicLocation,
         phone,
-        notes
+        notes,
+        updated_by
       } = payload;
 
       const now = new Date().toISOString();
@@ -65,7 +66,7 @@ async function persistAppointment(payload) {
 
       const query = `
         INSERT INTO appointment 
-          (appointmaent_date_time, status, patient_name, physiotherapist, updated_at, updated_by, patient_phone_number, diagnosis, notes)
+          (appointmaent_date_time, status, patient_name, clinic_location, updated_at, updated_by, patient_phone_number, diagnosis, notes)
         VALUES 
           ($1, 'scheduled', $2, $3, $4, $5, $6, '', $7)
       `;
@@ -73,9 +74,9 @@ async function persistAppointment(payload) {
       await client.query(query, [
         utcDatetime,
         name,
-        physio,
+        clinicLocation,
         now,
-        physio,
+        updated_by,
         phone || null,
         notes || ''
       ]);
