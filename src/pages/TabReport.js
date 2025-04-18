@@ -100,7 +100,7 @@ const TabReports = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ width: '100%', p: 2 }}>
+      <Box sx={{ width: '100%' }}>
         <Typography variant="h5" gutterBottom>
           Appointment Reports
         </Typography>

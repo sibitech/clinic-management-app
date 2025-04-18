@@ -5,7 +5,7 @@ import {
   TableHead, TableRow, Dialog, DialogActions,
   DialogContent, DialogTitle, TextField, Button,
   FormControl, InputLabel, Select, MenuItem,
-  Grid, Snackbar, Alert
+  Grid, Snackbar, Alert, CircularProgress
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -222,7 +222,7 @@ const TabManage = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box sx={{ width: '100%', p: 2 }}>
+      <Box sx={{ width: '100%' }}>
         <Typography variant="h5" gutterBottom>
           Manage Appointments
         </Typography>
@@ -253,7 +253,9 @@ const TabManage = () => {
         </Box>
 
         {loading ? (
-          <Typography>Loading appointments...</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+            <CircularProgress />
+          </Box>
         ) : appointments.length === 0 ? (
           <Typography>No appointments for this date.</Typography>
         ) : (
@@ -335,10 +337,9 @@ const TabManage = () => {
                     <Select
                       name="ClinicLocation"
                       label="Clinic Location"
-                      value={currentAppointment.clinic_id || "none"}
+                      value={currentAppointment.clinic_id}
                       onChange={handleCurrentAppointmentLocationChange}
                     >
-                      <MenuItem value="none">All Locations</MenuItem>
                       {clinicLocations.map((clinicLocation) => (
                         <MenuItem key={clinicLocation.id} value={clinicLocation.id}>
                           {clinicLocation.name}

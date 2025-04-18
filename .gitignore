@@ -23,3 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .vercel
+.idea/vcs.xml
+.idea/modules.xml
+.idea/clinic-management-app.iml
+.idea/.gitignore
