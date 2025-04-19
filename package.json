@@ -16,6 +16,7 @@
     "date-fns": "^2.29.3",
     "firebase": "^11.6.0",
     "framer-motion": "^12.6.3",
+    "luxon": "^3.6.1",
     "pg": "^8.14.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

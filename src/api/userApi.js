@@ -103,8 +103,10 @@ export const fetchClinicLocations = async () => {
 export const fetchAppointmentsByDateAndByLocation = async (date, location) => {
   try {
     const formattedDate = formatDateForAPI(date);
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     const response = await axios.get(`${API_BASE_URL}/get-appointments`, {
-      params: { date: formattedDate, location: location }
+      params: { date: formattedDate, timeZone: timeZone, location: location }
     });
 
     if (response.data.success) {
