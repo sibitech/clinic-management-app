@@ -16,12 +16,13 @@ module.exports = async (req, res) => {
   try {
     const { date } = req.query;
     const { location } = req.query;
+    const { timeZone } = req.query;
 
     if (!date) {
       return res.status(400).json({ success: false, error: 'Date parameter is required' });
     }
 
-    const appointments = await fetchAppointmentsByDateAndByLocation(date,location);
+    const appointments = await fetchAppointmentsByDateAndByLocation(date,timeZone,location);
 
     return res.status(200).json({ success: true, data: appointments });
   } catch (error) {

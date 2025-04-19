@@ -136,7 +136,8 @@ const TabManage = () => {
         notes: currentAppointment.notes,
         amount: currentAppointment.amount,
         updated_by: currentUser,
-        clinic_id: currentAppointment.clinic_id
+        clinic_id: currentAppointment.clinic_id,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
       };
 
       const result = await updateAppointment(payload);
@@ -223,17 +224,21 @@ const TabManage = () => {
     setNotification({ ...notification, open: false });
   };
 
-  // Format time for display (convert from UTC to local IST)
+  // Format time for display (convert from UTC to user's local timezone)
   const formatTime = (isoString) => {
     if (!isoString) return '';
+
+    // Get user's timezone dynamically from browser
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     const date = new Date(isoString);
-    // Format to IST (UTC+5:30)
     return date.toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'Asia/Kolkata'
+      timeZone: userTimeZone
     });
   };
+
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>

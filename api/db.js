@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 const { Pool } = require('pg');
 
 // Create a PostgreSQL connection pool
@@ -58,11 +59,12 @@ async function persistAppointment(payload) {
         clinicLocation,
         phone,
         notes,
-        updated_by
+        updated_by,
+        timeZone
       } = payload;
 
-      const now = new Date().toISOString();
-      const utcDatetime = new Date(datetime).toISOString();
+      const now = DateTime.fromISO(new Date().toISOString(), { zone: timeZone }).toUTC().toISO();
+      const utcDatetime = DateTime.fromISO(datetime, { zone: timeZone }).toUTC().toISO();
 
       const query = `
         INSERT INTO appointment 
@@ -91,17 +93,20 @@ async function persistAppointment(payload) {
   }
 }
 // Function to get appointments by date
-async function fetchAppointmentsByDateAndByLocation(date, location) {
+async function fetchAppointmentsByDateAndByLocation(date, timeZone, location) {
   try {
     const client = await getPool().connect();
     try {
       // Format date properly - ensure it's a string in YYYY-MM-DD format
       const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date;
-      
-      // Create date range for full day in UTC
-      const startDate = new Date(`${dateStr}T00:00:00Z`);
-      const endDate = new Date(`${dateStr}T23:59:59.999Z`);
-      
+
+      // Parse the date string in the user's timezone at start of day
+      const startDate = DateTime.fromISO(dateStr, { zone: timeZone }).startOf('day').toUTC().toJSDate();
+
+      // Parse the date string in the user's timezone at end of day
+      const endDate = DateTime.fromISO(dateStr, { zone: timeZone }).endOf('day').toUTC().toJSDate();
+
+
       // Define common columns to avoid duplication
       const commonColumns = `
         appointment.id,
@@ -117,10 +122,10 @@ async function fetchAppointmentsByDateAndByLocation(date, location) {
         clinic_locations.name as clinic_location,
         clinic_locations.id as clinic_id
       `;
-      
+
       let query;
       let params;
-      
+
       if (!location) {
         // If no location specified, fetch all appointments for the date
         query = `
@@ -145,7 +150,7 @@ async function fetchAppointmentsByDateAndByLocation(date, location) {
         `;
         params = [startDate.toISOString(), endDate.toISOString(), location];
       }
-      
+
       const result = await client.query(query, params);
       return result.rows;
     } finally {
@@ -171,10 +176,11 @@ async function updateAppointment(payload) {
         notes,
         amount,
         updated_by, // Assuming this is the current user
-        clinic_id
+        clinic_id,
+        timeZone
       } = payload;
 
-      const now = new Date().toISOString();
+      const now = DateTime.fromISO(new Date().toISOString(), { zone: timeZone }).toUTC().toISO();
 
       const query = `
         UPDATE appointment

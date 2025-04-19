@@ -81,11 +81,13 @@ const TabBook = () => {
         setErrors(validationErrors);
         if (Object.keys(validationErrors).length > 0) return;
         const currentUser = user?.displayName;
+        const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const payload = {
             ...form,
             status: 'scheduled',
             updated_at: new Date().toISOString(),
-            updated_by: currentUser
+            updated_by: currentUser,
+            timeZone: userTimeZone
         };
 
         console.log('Submitting payload:', payload);
