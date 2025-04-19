@@ -8,8 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import './Home.css';
 import TabBook from './TabBook';
 import TabManage from './TabManage';
-
-const TabReport = () => <p>Reports on appointments.</p>;
+import TabReport from './TabReport';
 
 const tabs = [<TabManage />, <TabBook />, <TabReport />];
 
