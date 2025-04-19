@@ -26,6 +26,7 @@ const TabManage = () => {
   const [currentAppointment, setCurrentAppointment] = useState(null);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const { user } = useAuth();
+  const [isSavingAppointment, setIsSavingAppointment] = useState(false);
 
   // Fetch clinic locations only once when component mounts
   useEffect(() => {
@@ -86,7 +87,7 @@ const TabManage = () => {
   const handleCurrentAppointmentLocationChange = (event) => {
     const value = event.target.value;
     const previousValue = currentAppointment.clinic_id;
-  
+
     // Only mark as changed if the values are different
     if (value !== previousValue) {
       setLocationChanged(true);
@@ -107,6 +108,7 @@ const TabManage = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setCurrentAppointment(null);
+    setIsSavingAppointment(false);
   };
 
   // Handle input changes in the edit dialog
@@ -120,9 +122,10 @@ const TabManage = () => {
 
   // Save appointment changes
   const handleSaveChanges = async () => {
+    if (isSavingAppointment) return;
     try {
       const currentUser = user?.displayName;
-
+      setIsSavingAppointment(true);
       // Prepare payload for API
       const payload = {
         id: currentAppointment.id,
@@ -172,8 +175,10 @@ const TabManage = () => {
           message: result.error || 'Failed to update appointment',
           severity: 'error'
         });
+        setIsSavingAppointment(false);
       }
     } catch (error) {
+      setIsSavingAppointment(false);
       setNotification({
         open: true,
         message: 'Failed to update appointment',
@@ -395,7 +400,7 @@ const TabManage = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseDialog}>Cancel</Button>
-            <Button onClick={handleSaveChanges} variant="contained" color="primary">
+            <Button onClick={handleSaveChanges} variant="contained" color="primary" disabled={isSavingAppointment}>
               Save Changes
             </Button>
           </DialogActions>

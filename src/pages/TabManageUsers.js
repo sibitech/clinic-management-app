@@ -17,6 +17,7 @@ const TabManageUsers = () => {
   const [isNewUser, setIsNewUser] = useState(false);
   const [currentUser, setCurrentUser] = useState({ email: '', is_admin: false });
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
+  const [isSavingUser, setIsSavingUser] = useState(false);
 
   useEffect(() => {
     loadUsers();
@@ -80,6 +81,7 @@ const TabManageUsers = () => {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
+    setIsSavingUser(false);
   };
 
   const handleInputChange = (e) => {
@@ -91,7 +93,9 @@ const TabManageUsers = () => {
   };
 
   const handleSaveUser = async () => {
+    if (isSavingUser) return;
     try {
+      setIsSavingUser(true);
       let result;
       if (isNewUser) {
         result = await addUser(currentUser);
@@ -108,6 +112,7 @@ const TabManageUsers = () => {
         });
         handleCloseDialog();
       } else {
+        setIsSavingUser(false);
         setNotification({
           open: true,
           message: result.error || `Failed to ${isNewUser ? 'add' : 'update'} user`,
@@ -115,6 +120,7 @@ const TabManageUsers = () => {
         });
       }
     } catch (error) {
+      setIsSavingUser(false);
       setNotification({
         open: true,
         message: `Failed to ${isNewUser ? 'add' : 'update'} user`,
@@ -204,7 +210,7 @@ const TabManageUsers = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button onClick={handleSaveUser} variant="contained" color="primary">
+          <Button onClick={handleSaveUser} variant="contained" color="primary" disabled={isSavingUser}>
             Save
           </Button>
         </DialogActions>

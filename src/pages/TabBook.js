@@ -32,6 +32,7 @@ const TabBook = () => {
     const [locationFetchError, setLocationFetchError] = useState('');
     const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
     const { user } = useAuth();
+    const [isSavingAppointment, setIsSavingAppointment] = useState(false);
 
     useEffect(() => {
         const loadLocations = async () => {
@@ -74,6 +75,7 @@ const TabBook = () => {
     };
 
     const handleSubmit = async (e) => {
+        if (isSavingAppointment) return;
         e.preventDefault();
         const validationErrors = validate();
         setErrors(validationErrors);
@@ -89,6 +91,7 @@ const TabBook = () => {
         console.log('Submitting payload:', payload);
 
         try {
+            setIsSavingAppointment(true);
             const success = await persistAppointment(payload);
             setSubmitMsg(success ? 'Appointment saved successfully.' : 'Failed to save appointment.');
             setNotification({
@@ -112,6 +115,7 @@ const TabBook = () => {
                 message: 'Failed to save appointment.',
                 severity: 'error'
             });
+            setIsSavingAppointment(false);
         }
     };
 
@@ -206,7 +210,7 @@ const TabBook = () => {
                     fullWidth
                 />
 
-                <Button type="submit" variant="contained" color="primary">
+                <Button type="submit" variant="contained" color="primary" disabled={isSavingAppointment}>
                     Submit
                 </Button>
                 {submitMsg && (
