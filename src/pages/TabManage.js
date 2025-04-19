@@ -20,6 +20,7 @@ const TabManage = () => {
   const [appointments, setAppointments] = useState([]);
   const [clinicLocations, setClinicLocations] = useState([]);
   const [selectedClinicLocation, setSelectedClinicLocation] = useState(null);
+  const [locationChanged, setLocationChanged] = useState(false);
   const [loading, setLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [currentAppointment, setCurrentAppointment] = useState(null);
@@ -84,6 +85,12 @@ const TabManage = () => {
   // Handle location change
   const handleCurrentAppointmentLocationChange = (event) => {
     const value = event.target.value;
+    const previousValue = currentAppointment.clinic_id;
+  
+    // Only mark as changed if the values are different
+    if (value !== previousValue) {
+      setLocationChanged(true);
+    }
     setCurrentAppointment(prev => ({
       ...prev,
       clinic_id: value === "none" ? null : value
@@ -155,7 +162,10 @@ const TabManage = () => {
 
         handleCloseDialog();
         // Then reload the appointments data
-        await loadAppointments();
+        if (locationChanged) {
+          await loadAppointments();
+          setLocationChanged(false)
+        }
       } else {
         setNotification({
           open: true,

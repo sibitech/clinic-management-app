@@ -4,13 +4,52 @@ import axios from 'axios';
 const api = axios.create();
 const API_BASE_URL = '/api';
 
-// Check if a user is allowed to access the app
-export async function checkUserAccess(email) {
+export async function getUser(email) {
   try {
-    const response = await api.post(`${API_BASE_URL}/check-access`, { email });
-    return response.data.isAllowed;
+    const response = await api.post(`${API_BASE_URL}/manage-users`, { email, action: 'get-user-by-email' });
+    return response.data.user;
   } catch (error) {
     console.error("Error checking user access:", error);
+    return false;
+  }
+}
+
+export async function fetchAllUsers() {
+  try {
+    const response = await api.post(`${API_BASE_URL}/manage-users`, { action: 'get-all-users' });
+    return response.data.users;
+  } catch (error) {
+    console.error("Error fetching all users access:", error);
+    return false;
+  }
+}
+
+export async function addUser(payload) {
+  try {
+    const response = await api.post(`${API_BASE_URL}/manage-users`, { email: payload.email, isAdmin: payload.is_admin, action: 'add-user' });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding user access:", error);
+    return false;
+  }
+}
+
+export async function updateUser(payload) {
+  try {
+    const response = await api.post(`${API_BASE_URL}/manage-users`, {userId: payload.id, email: payload.email, is_admin: payload.is_admin, action: 'update-user' });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user access:", error);
+    return false;
+  }
+}
+
+export async function deleteUser(id) {
+  try {
+    const response = await api.post(`${API_BASE_URL}/manage-users`, {userId: id, action: 'delete-user' });
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user access:", error);
     return false;
   }
 }
@@ -41,9 +80,9 @@ const formatDateForAPI = (date) => {
  * @returns {Array} Array of clinic locations
  */
 export const fetchClinicLocations = async () => {
-  try {   
+  try {
     const response = await axios.get(`${API_BASE_URL}/get-clinic-locations`);
-    
+
     if (response.data.success) {
       return response.data.data || [];
     } else {
@@ -65,9 +104,9 @@ export const fetchAppointmentsByDateAndByLocation = async (date, location) => {
   try {
     const formattedDate = formatDateForAPI(date);
     const response = await axios.get(`${API_BASE_URL}/get-appointments`, {
-      params: { date: formattedDate,  location: location}
+      params: { date: formattedDate, location: location }
     });
-    
+
     if (response.data.success) {
       return response.data.data || [];
     } else {
@@ -90,7 +129,7 @@ export const updateAppointment = async (appointmentData) => {
     const response = await axios.put(`${API_BASE_URL}/update-appointment`, {
       payload: appointmentData
     });
-    
+
     return response.data;
   } catch (error) {
     console.error('Error updating appointment:', error);
@@ -108,7 +147,7 @@ export const deleteAppointment = async (appointmentId) => {
     const response = await axios.delete(`${API_BASE_URL}/delete-appointment`, {
       params: { id: appointmentId }
     });
-    
+
     return response.data;
   } catch (error) {
     console.error('Error deleting appointment:', error);

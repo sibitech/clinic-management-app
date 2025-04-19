@@ -4,18 +4,28 @@ import { BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
 import BookIcon from '@mui/icons-material/MenuBook';
 import ManageIcon from '@mui/icons-material/Settings';
 import ReportIcon from '@mui/icons-material/Assessment';
+import PeopleIcon from '@mui/icons-material/People';
 import { AnimatePresence, motion } from 'framer-motion';
 import './Home.css';
 import TabBook from './TabBook';
 import TabManage from './TabManage';
 import TabReport from './TabReport';
+import TabManageUsers from './TabManageUsers';
 
-const tabs = [<TabManage />, <TabBook />, <TabReport />];
 
 function Home() {
   const { user, signOut } = useAuth();
   const [tabIndex, setTabIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  
+  const tabs = [
+    <TabManage />,
+    <TabBook />,
+    <TabReport />,
+    user.isAdmin ? <TabManageUsers /> : null
+  ].filter(Boolean);
+
+  
 
   const handleTabChange = (event, newValue) => {
     setDirection(newValue > tabIndex ? 1 : -1);
@@ -68,6 +78,7 @@ function Home() {
           <BottomNavigationAction label="Manage" icon={<ManageIcon />} />
           <BottomNavigationAction label="Book" icon={<BookIcon />} />
           <BottomNavigationAction label="Report" icon={<ReportIcon />} />
+          {user.isAdmin && <BottomNavigationAction label="Users" icon={<PeopleIcon />} />}
         </BottomNavigation>
       </Paper>
     </div>

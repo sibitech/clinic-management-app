@@ -1,12 +1,12 @@
 // src/context/AuthContext.jsx - Authentication context provider
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { 
-  signInWithPopup, 
+import {
+  signInWithPopup,
   signOut as firebaseSignOut,
-  onAuthStateChanged 
+  onAuthStateChanged
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase/config';
-import { checkUserAccess } from '../api/userApi';
+import { getUser } from '../api/userApi';
 
 const AuthContext = createContext();
 
@@ -41,14 +41,14 @@ export function AuthProvider({ children }) {
       if (authUser) {
         try {
           // Check if user's email is in the allowlist
-          const isAllowed = await checkUserAccess(authUser.email);
-          
+          const user = await getUser(authUser.email);
           setUser({
             uid: authUser.uid,
             email: authUser.email,
             displayName: authUser.displayName,
             photoURL: authUser.photoURL,
-            isAllowed
+            isAllowed: !!user,
+            isAdmin: Boolean(user?.is_admin)
           });
         } catch (error) {
           console.error("Error checking user access:", error);

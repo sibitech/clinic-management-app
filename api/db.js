@@ -15,13 +15,13 @@ function getPool() {
 }
 
 // Check if a user is allowed
-async function isUserAllowed(email) {
+async function getUserByEmail(email) {
   try {
     const client = await getPool().connect();
     try {
-      const query = 'SELECT EXISTS(SELECT 1 FROM allowed_users WHERE email = $1)';
+      const query = 'SELECT * FROM allowed_users WHERE email = $1';
       const result = await client.query(query, [email]);
-      return result.rows[0].exists;
+      return result.rows[0];
     } finally {
       client.release();
     }
@@ -248,17 +248,37 @@ async function deleteAppointment(id) {
 }
 
 // Add user to allowlist
-async function addAllowedUser(email, name = null, notes = null) {
+async function addAllowedUser(email, isAdmin) {
   try {
     const client = await getPool().connect();
     try {
       const query = `
-        INSERT INTO allowed_users (email, name, notes) 
-        VALUES ($1, $2, $3) 
+        INSERT INTO allowed_users (email, is_admin) 
+        VALUES ($1, $2) 
         ON CONFLICT (email) DO NOTHING
         RETURNING *
       `;
-      const result = await client.query(query, [email, name, notes]);
+      const result = await client.query(query, [email, isAdmin]);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Database error:', error);
+    throw new Error('Database error');
+  }
+}
+async function updateAllowedUser(id, email, isAdmin) {
+  try {
+    const client = await getPool().connect();
+    try {
+      const query = `
+        UPDATE allowed_users
+        SET email = $2, is_admin = $3
+        WHERE id = $1
+        RETURNING *
+      `;
+      const result = await client.query(query, [id, email, isAdmin]);
       return result.rows[0];
     } finally {
       client.release();
@@ -269,8 +289,29 @@ async function addAllowedUser(email, name = null, notes = null) {
   }
 }
 
+async function deleteAllowedUser(id) {
+  try {
+    const client = await getPool().connect();
+    try {
+      const query = `
+        DELETE FROM allowed_users
+        WHERE id = $1
+        RETURNING *
+      `;
+      const result = await client.query(query, [id]);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Database error:', error);
+    throw new Error('Database error');
+  }
+}
+
+
 // List all allowed users
-async function getAllowedUsers() {
+async function getAllUsers() {
   try {
     const client = await getPool().connect();
     try {
@@ -287,9 +328,11 @@ async function getAllowedUsers() {
 }
 
 module.exports = {
-  isUserAllowed,
+  getUserByEmail,
+  getAllUsers,
   addAllowedUser,
-  getAllowedUsers,
+  updateAllowedUser,
+  deleteAllowedUser,
   persistAppointment,
   fetchAppointmentsByDateAndByLocation,
   updateAppointment,
