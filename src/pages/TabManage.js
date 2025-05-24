@@ -331,6 +331,7 @@ const TabManage = () => {
                   <TextField
                     fullWidth
                     label="Phone Number"
+                    type="tel"
                     name="phone"
                     value={currentAppointment.phone || ''}
                     onChange={handleInputChange}
