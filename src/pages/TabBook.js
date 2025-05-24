@@ -109,6 +109,7 @@ const TabBook = () => {
                     clinicLocation: '',
                     notes: ''
                 });
+                setIsSavingAppointment(false);
             }
         } catch (error) {
             console.error("Failed to save appointment:", error);
