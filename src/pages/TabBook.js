@@ -148,6 +148,7 @@ const TabBook = () => {
                 <TextField
                     label="Phone Number"
                     name="phone"
+                    type="tel"
                     value={form.phone}
                     onChange={handleChange}
                     error={!!errors.phone}
